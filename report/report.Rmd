@@ -1,0 +1,313 @@
+---
+title: |
+  ![](logo_large.png){width=1.5in}  
+  
+  CXCR4 and adaptive anti-tumor immunity in the pancreas cancer TCGA cohort
+subtitle: "Short Analysis Report"
+author: "Piotr Tymoszuk, daas.tirol"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+bibliography: report_biblio.bib
+csl: american-medical-association.csl
+header-includes:
+ \usepackage{longtable}
+  \usepackage{tabu}
+  \usepackage{caption}
+  \usepackage{makecell}
+  \usepackage{pdflscape}
+  \usepackage{array}
+  \usepackage{booktabs}
+  \usepackage{threeparttable}
+  \usepackage{threeparttablex}
+  \usepackage{wrapfig}
+  \usepackage{multirow}
+  \usepackage[normalem]{ulem}
+  \usepackage{colortbl}
+  \usepackage{xcolor}
+  \usepackage{float} \floatplacement{figure}{H} \floatplacement{table}{H}
+  \newcommand{\beginsupplement}{\setcounter{table}{0}  \renewcommand{\thetable}{S\arabic{table}}       \setcounter{figure}{0} \renewcommand{\thefigure}{S\arabic{figure}}}
+---
+
+```{r, setup, include = FALSE}
+
+library(bookdown)
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, dev = "cairo_pdf")
+
+
+```
+
+\newpage
+
+# Analysis summary
+
+- The primary goal of the analysis was to check co-expression of _CXCR4_ with the gene expression readouts of immune infiltration in pancreatic cancer and, in particular, with cytotoxic T cells. The secondary tasks were to determine prognostic relevance of tumor _CXCR4_ expression and changes in whole genome expression and signaling pathways in _CXCR4_^high^ tumors as compared with _CXCR4_^lo^ malignancies.
+
+- A total of `r tcga$expression %>% filter(tissue_type == 'Tumor') %>% nrow` primary pancreatic adenocarcinoma samples from the TCGA PAAD cohort were analyzed [@Raphael2017]. Estimates of Quantiseq immune infiltration and immune response scores for the TCGA PAAD RNA Seq samples were extracted from the TIMER 2.0 platform [@Li2020]. Gene members of the T cell exhaustion [@Woroniecka2018], cytotoxic signature [@Yan2021], IFN-$\gamma$, expanded immune [@Ayers2017] and tumor inflammation signatures [@Danaher2018] were extracted from the respective literature and the signature scores calculated by GSVA [@Hanzelmann2013].
+
+- The methodology encompassed self-organizing map (SOM) participant clustering by the immune infiltration estimates [@Kohonen1995;@Vesanto2000], Pearson's correlation of _CXCR4_ expression with estimates of immune cell infiltration and comparison of survival differences between _CXCR4_^high^ and _CXCR4_^low^ tumors using automatically optimized expression cutoffs [@Kocher2021;@Eigentler2020], Kaplan-Meier method and Cox regression. Differentially regulated genes in _CXCR4_^high^ vs _CXCR4_^low^ tumors were identified by Benjamini-Hochberg-corrected two-tailed T test [@Benjamini1995]. Differences in biological processes and signaling pathway modulation between the _CXCR4_ expression strata were investigated with GO term and KEGG pathway enrichment procedures [@Young2010] and with the _SPIA_ algorithm [@Tarca2009].
+
+- By means of SOM and hierarchical clustering [@Kohonen1995;@Vesanto2000], three pancreatic tumor subsets were identified, which differed primarily in malignant cell content, cytotoxic T cells, regulatory CD4^+^ T cells and TAM (tumor-associated macrophages) infiltration (__Figure \@ref(fig:fig-clusters)A__, __Supplementary Figure \@ref(fig:fig-cluster-dev)__ and __\@ref(fig:fig-cluster-infiltration)__).
+_CXCR4_ was predominantly expressed in the malignancies characterized by high Treg, CD8^+^ T cells and tumor-associate macrophage (TAM) abundance (__Figure \@ref(fig:fig-clusters)__).
+
+- Expression of _CXCR4_ was significantly positively correlated with the values of the immune and microenvironment scores [@Li2020] and Quantiseq estimates of T regs, CD8^+^ T cells and TAMs and was inversely correlated with the contents of non-leukocyte cells (__Figure \@ref(fig:fig-correlation)__). This suggests that the chemokine receptor may be predominantly expressed by stroma cells and especially cytotoxic T cells, T regs and TAMs.
+
+- Quite surprisingly, high _CXCR4_ expression tended to be associated with better overall survival but was only weakly linked to tumor-related (TRS) and relapse-free survival (RFS) in Kaplan-Meier analysis (__Figure \@ref(fig:fig-uni-cox)__).
+
+- Comparison of the cancer immune signatures values [@Li2020;@Woroniecka2018;@Yan2021;@Ayers2017;@Danaher2018] between the _CXCR4_^high^ and _CXCR4_^low^ tumors stratified by the optimal TRS cutoff (__Figure \@ref(fig:fig-uni-cox)__) reveals higher expression of the immune, microenvironment, cytotoxicity and stroma score as well as expanded immune signature in the CXCR4 high expression strata (__Figure \@ref(fig:fig-imm-sig)__). Investigation of the unique signature gene members points toward highly upregulated levels of chemokines (_CXCL9_, _CXCL10_, _CXCL13_), granzymes, T cell lineage markers (_CD3E_, _CD2_, _CD8A_) along with T cell exhaustion markers (_TIGIT_, _PDCD1_, _HAVCR2_) in _CXCR4_^high^ neoplasms (__Figure \@ref(fig:fig-imm-genes)__).
+
+- Differential gene expression (__Figure \@ref(fig:fig-dge)__, __Supplementary Figure \@ref(fig:fig-top-dge)__) with subsequent pathway modulation and enrichment analysis[@Tarca2009;@Young2010] indicates higher activity of NK cell cytotoxicity, chemokine and focal adhesion pathways together with increased MAPK signaling in the _CXCR4_^high^ than in the _CXCR4_^low^ TCGA pancreatic tumors (__Figure \@ref(fig:fig-spia)__, __Supplementary Figure \@ref(fig:fig-enrichment)__).
+
+- Collectively, the results suggest that _CXCR4_ is likely expressed by tumor-infiltrating cytotoxcic CD8^+^ cells, Tregs and macrophages. Unexpectedly, _CXCR4_ gene does not seem to play a protective role or contribute to better survival in the TCGA PAAD cohort. Interestingly, _CXCR4_ is co-expressed both with the typical pan T cell, CD8^+^ T cell and cytotoxicity markers as well as some exhaustion genes. The biological impact of _CXCR4_ on T cell priming, anergy and exhaustion may be quite complicated (e.g. dependent of T cell subtype) and needs to be clarified by ex vivo experiments.
+
+\newpage
+
+# Methods
+
+## Study cohort, immune infiltration data, gene signatures
+
+A total of `r tcga$expression %>% filter(tissue_type == 'Tumor') %>% nrow` primary pancreatic tumor samples from the TCGA PAAD cohort were analyzed [@Raphael2017]. The normalized RNAseq (level 3) togehter with clinical data were fetched from the GDC repository using TCGA Assembler 2.0 (https://github.com/compgenome365/TCGA-Assembler-2/tree/master/TCGA-Assembler) as described [@Kocher2021].
+
+Estimates of immune infiltration and immune response scores for the TCGA PAAD RNA Seq samples were extracted from the TIMER 2.0 platform [@Li2020] and, in case of multiple estimates of the same population by multiple algorithms, pooled with the gene set variation analysis (GSVA) algorithm [@Hanzelmann2013] and termed further 'pooled multi-algorithm estimates'. Gene members of the T cell exhaustion [@Woroniecka2018], cytotoxic [@Yan2021], IFN-$\gamma$, expanded immune [@Ayers2017] and tumor inflammation signatures [@Danaher2018] were extracted from the respective literature and the signature scores calculated by GSVA [@Hanzelmann2013].
+
+## Data transformation and visualization 
+
+The study variables were transformed, analyzed and visualized with R version 4.0.5 with _tidyverse_ [@Wickham2019;@Wickham2016], _cowplot_ [@Wilke2019] and _survminer_ [@Kassambara2016] packages. RNAseq data in form of FKPM counts were transformed with the $log_2(FKPM + 1)$ function to improve normality.
+
+## Clustering
+
+The samples were clustered using a two-step combined self-organizing map (SOM) and hierarchical clustering algorithm [@Vesanto2000;@Kohonen1995]. In the first step, samples were assigned to the nodes of hexagonal-topology SOM grids (samples: 7 $\times$ 7) with the Euclidean distance measure between the participants [@Wehrens2018;@Vesanto2000;@Kohonen1995]. SOM assignment was accomplished with the tools provided by _kohonen_ package [@Wehrens2018] and home-developed wrappers (package _clustTools_, https://github.com/PiotrTymoszuk/clustTools). The SOM training process is visualized in __Supplementary Figure \@ref(fig:fig-cluster-dev)A__. In the second step, SOM nodes were subjected to hierarchical clustering with Euclidean distance measure. The optimal cluster number (k = 3) was determined by the bend of the within sum-of-squares and visual analysis of the dendrograms (__Supplementary Figure \@ref(fig:fig-cluster-dev)BC__). The hierarchical clustering was done with the base _hclust()_ function and home-developed package _clusterTools_ (https://github.com/PiotrTymoszuk/clustTools) for clustering quality control and visualization.
+
+Differences of expression of immune estimates and _CXCR4_ between the tumor sample clusters were compared with one-way ANOVA. P values were corrected for multiple comparisons with Benjamini-Hochberg method [@Benjamini1995].
+
+## Co-expression analysis
+
+Correlation of immune infiltration estimates values and _CXCR4_ expression levels was done with Spearman correlation test. Significance ($\rho\neq 0$) was assessed with two-tailed T test. P values were corrected for multiple comparisons with Benjamini-Hochberg method [@Benjamini1995]. Base R function _cor.test()_ and the in-house-developed package _ExDA_ were used in the correlation analysis (https://github.com/PiotrTymoszuk/ExDA).
+
+## Survival analysis
+
+To compare differences in overall (OS), tumor-related survival (TRS) and relapse-free survival (RFS) between high and low expressors of _CXCR4_ , the _CXCR4_ expression levels were subjected to an optimal stratification procedure using an in-house developed iterative algorithm (development package _kmOptimizer_, https://github.com/PiotrTymoszuk/kmOptimizer) described previously [@Eigentler2020;@Kocher2021]. The minimal strata size was set to 20% of the cohort.
+
+Differences in survival time between the low and high expressors were compared with Kaplan-Meier method and Mentel-Henszel test (package _survival_ and _kmOptimizer_). P values were corrected for multiple comparisons with Benjamini-Hochberg method [@Benjamini1995].
+
+## Differential expression of immune signatures, immune genes and whole-genome transcripts
+
+Pancreatic tumors were stratified into _CXCR4_^high^ and _CXCR4_^low^ samples by the optimal cutoff for the difference in overall survival. Significance of differences in expression of immune signature values or expression of unique signature member genes between the _CXCR4_ strata was assessed by two-tailed T test (development package _ExDA_, https://github.com/PiotrTymoszuk/ExDA). P values were corrected for multiple comparisons with Benjamini-Hochberg method [@Benjamini1995].
+
+Whole-genome differentially expressed genes were identified by Benjamini-Hochberg-corrected T test [@Benjamini1995] and 1.5-fold regulation cutoff (__Supplementary Table \@ref(tab:tab-dge)__).
+
+## GO and KEGG enrichment analysis, signaling pathway modulation analysis
+
+Biological process Gene Ontology (GO) term and KEGG pathway enrichment analysis with the sets of genes significantly up- or down-regulated in _CXCR4_^high^ as compared with _CXCR4_^low^ tumors (__Supplementary Table \@ref(tab:tab-dge)__) was performed with _goana()_ and _kegga()_ functions, respectively, provided by _limma_ package [@Young2010]. P values for significant enrichment were corrected for multiple comparisons by Benjamini-Hochberg method [@Benjamini1995].
+
+Signaling pathway modulation analysis employing the genes differentially expressed between the _CXCR4_ expression strata (__Supplementary Table \@ref(tab:tab-dge)__) was conducted with _spia()_ tool from _SPIA_ package [@Tarca2009]. Significantly modulated pathways were defined by the aggregated, Benjamini-Hochberg-corrected enrichment/perturbation p value (pGFDR < 0.05) [@Benjamini1995]. Magnitude of pathway modulation and activation/inhibition status is expressed as the total perturbation accumulation in the pathway (tA) [@Tarca2009]. Complete significant pathway modulation results are presented in __Supplementary Table \@ref(tab:tab-spia)__.
+
+## Data and code availability
+
+The complete TCGA analysis pipeline is available at https://github.com/PiotrTymoszuk/CXCR4-TCGA.
+
+\newpage
+
+# Figures
+
+```{r fig-clusters, fig.width = mm_inch(report_figures$clusters$w), fig.height = mm_inch(report_figures$clusters$h), dpi = 600, fig.cap = 'Predominant expression of \\emph{CXCR4} in stroma -, CD8\\textsuperscript{+} - and TAM-rich pancreatic tumors.'}
+
+report_figures$clusters$plot
+
+```
+
+__Figure \@ref(fig:fig-clusters). Predominant expression of _CXCR4_ in stroma -, CD8^+^ - and TAM-rich pancreatic tumors.__ 
+
+Tumor samples and pooled multi-algorithm immune infiltration estimates were clustered with a two step self-organizing map/hierarchical clustering procedure (__Supplementary Figure \@ref(fig:fig-cluster-dev)__). Differences in immune infiltration estimates and log~2~ _CXCR4_ expression between the _Stroma-high_, _-intermediate_ and _-low_ tumor subsets were determined by one-way ANOVA and p values corrected for multiple testing with Benjamini-Hochberg method.
+
+__(A)__ Values of immune infiltration estimates in the _#1_, _#2_ and _#3_ tumor subsets presented as a heat map.
+
+__(B)__ log~2~ _CXCR4_ expression in the tumor subsets. p value for the expression difference is shown in the plot heading. N numbers of samples assigned to the tumor subsets are provided under the plot.
+
+\newpage
+
+```{r fig-correlation, fig.width = mm_inch(report_figures$correlation$w), fig.height = mm_inch(report_figures$correlation$h), dpi = 600, fig.cap = 'Correlation of the pooled multi-algorithm immune infiltration estimates with $\\emph{CXCR4}$ expression.'}
+
+report_figures$correlation$plot
+
+```
+
+__Figure \@ref(fig:fig-correlation). Correlation of the pooled multi-algorithm immune infiltration estimates with _CXCR4_ expression.__ 
+
+Pooled multi-algorithm estimates of immune cell features were correlated with $\\log_2$ expression levels of CXCR4 with Spearman correlation (__Supplementary Table \@ref(tab:tab-correlations)__). P values were corrected for multiple comparisons with Benjamini-Hochberg method. 
+
+__(A)__ $\rho$ correlation coefficients with $95\%$ confidence intervals are shown for the significant immune feature estimates. Red: positive correlation, blue: negative correlation. N number of observations is indicated below the plot.
+
+__(B)__ Plots of values of M2 macrophages, regulatory T cell, CD8^+^ T cell and non-leukocyte uncharacterized cell infiltration estimates vs $\log_2$ _CXCR4_ expression. Each point represents a single sample, blue lines represent fitted linear trends and gray ribbons represent $95\%$ confidence intervals. Values of $\rho$ with $95\%$ confidence intervals and p values are shown in the plot captions.
+
+\newpage
+
+```{r fig-uni-cox, fig.width = mm_inch(report_figures$survival$w), fig.height = mm_inch(report_figures$survival$h), dpi = 600, fig.cap = 'Differences in survival between $\\emph{CXCR4}^{high}$ and $\\emph{CXCR4}^{high}$ cancer patients.'}
+
+report_figures$survival$plot
+
+```
+
+__Figure \@ref(fig:fig-uni-cox). Differences in survival between _CXCR4_^high^ and _CXCR4_^low^ cancer patients.__ 
+
+Tumor samples were stratified as high and low expressors for $\log_2$ _CXCR4_ expression with automatically-determined optimal cutoffs. Differences in overall (OS), tumor-related (TRS) and relapse-free survival (RFS) were compared by Mentel-Henszel test corrected for multiple comparisons with Benjamini-Hochberg method. The fraction of survivors were presented in Kaplan-Meier plots. N numbers of observations in the _CXCR4_ strata are indicated below the plots.
+
+\newpage
+
+```{r fig-imm-sig, fig.width = mm_inch(report_figures$immune_signatures$w), fig.height = mm_inch(report_figures$immune_signatures$h), dpi = 600, fig.cap = 'Differences in values of immune signatures between $\\emph{CXCR4}^{high}$ and $\\emph{CXCR4}^{high}$ tumors.'}
+
+report_figures$immune_signatures$plot
+
+```
+
+__Figure \@ref(fig:fig-imm-sig). Differences in values of immune signatures between _CXCR4_^high^ and _CXCR4_^low^ tumors.__ 
+
+Tumor samples were stratified as _CXCR4_^high^ vs _CXCR4_^low^ expressors by the optimal cutoff for the difference in tumor-related survival. Differences in values of immune signatures (provided by TIMER: Immune Score, Microenvironment Score, Cytotoxicity Score and Stroma Score, provided by literature: Expanded Immune Signature, Exhaustion Signature, TISig: Tumor Inflammation Signature, IFN-$\gamma$ Signature, Cytotoxic Signature) between the _CXCR4_ strata were investigated with T test. Benjamini-Hochberg p values are presented in plot captions. N numbers of the strata samples are indicated next to the plots.
+
+\newpage
+
+```{r fig-imm-genes, fig.width = mm_inch(report_figures$t_cell_genes$w), fig.height = mm_inch(report_figures$t_cell_genes$h), dpi = 600, fig.cap = 'Differences in expression of unique gene members of immune signatures between $\\emph{CXCR4}^{high}$ and $\\emph{CXCR4}^{high}$ tumors.'}
+
+report_figures$t_cell_genes$plot
+
+```
+
+__Figure \@ref(fig:fig-imm-genes). Differences in expression of unique gene members of immune signatures between _CXCR4_^high^ and _CXCR4_^low^ tumors.__ 
+
+Tumor samples were stratified as _CXCR4_^high^ vs _CXCR4_^low^ expressors by the optimal cutoff for the difference in tumor-related survival. Differences in $log_2$ expression of the unique gene members of immune signatures (provided by TIMER: Immune Score, Microenvironment Score, Cytotoxicity Score and Stroma Score, provided by literature: Expanded Immune Signature, Exhaustion Signature, TISig: Tumor Inflammation Signature, IFN-$\gamma$ Signature, Cytotoxic Signature) between the _CXCR4_ strata were investigated with T test. $\log_2$ differences in expression between the _CXCR4_^high^ vs _CXCR4_^low^ samples with $95\%$ confidence intervals are presented. N numbers of the strata samples are indicated next to the plot.
+
+\newpage
+
+```{r fig-dge, fig.width = mm_inch(report_figures$dge$w), fig.height = mm_inch(report_figures$dge$h), dpi = 600, fig.cap = 'Differences in gene expression between $\\emph{CXCR4}^{high}$ and $\\emph{CXCR4}^{high}$ tumors.'}
+
+report_figures$dge$plot
+
+```
+
+__Figure \@ref(fig:fig-dge). Differences in gene expression between _CXCR4_^high^ and _CXCR4_^low^ tumors.__ 
+
+Tumor samples were stratified as _CXCR4_^high^ vs _CXCR4_^low^ expressors (`r stri_replace(dge$plot_tag, fixed = '\n', replacement = '')`) by the optimal cutoff for the difference in tumor-related survival. Differentially expressed genes were determined by Benjamini-Hochberg-corrected T test and 1.5-fold regulation cutoff (__Supplementary Table \@ref(tab:tab-dge)__). $log_2$ differences in expression between the _CXCR4_^high^ and _CXCR4_^low^ tumors and Benjamini-Hochberg-corrected p values (pFDR) for each gene are presented in a volcano plot. Numbers of differentially expressed genes are indicated under the plot.
+
+\newpage
+
+```{r fig-spia, fig.width = mm_inch(report_figures$dge$w), fig.height = mm_inch(report_figures$dge$h), dpi = 600, fig.cap = 'Differences in signaling pathway modulation between $\\emph{CXCR4}^{high}$ and $\\emph{CXCR4}^{high}$ tumors.'}
+
+report_figures$spia$plot
+
+```
+
+__Figure \@ref(fig:fig-spia). Differences in signaling pathway modulation between _CXCR4_^high^ and _CXCR4_^low^ tumors.__ 
+
+Differential signaling pathway modulation in _CXCR4_^high^ and _CXCR4_^low^ expression strata (`r stri_replace(dge$plot_tag, fixed = '\n', replacement = '')`) was investigated with the _SPIA_ algorithm (__Supplementary Table \@ref(tab:tab-spia)__). Significantly modulated pathways were identified by the value of combined (enrichment and perturbation) p value corrected for multiple comparisons with Benjamini-Hochberg method (pGFDR < 0.05). Estimates of the total pathway perturbation (tA) in the _CXCR4_^high^ vs _CXCR4_^low^ tumors are shown for the significantly modulated pathways.
+
+\newpage
+
+\beginsupplement
+
+# Supplementary Figures 
+
+```{r fig-cluster-dev, fig.width = mm_inch(suppl_figures$cluster_dev$w), fig.height = mm_inch(suppl_figures$cluster_dev$h), dpi = 600, fig.cap = 'Definition of tumor sample and immune infiltration feature clusters.'}
+
+suppl_figures$cluster_dev$plot
+
+```
+
+__Supplementary Figure \@ref(fig:fig-cluster-dev). Definition of tumor sample and immune infiltration feature clusters.__ 
+
+Tumor samples and pooled multi-algorithm immune infiltration estimates were clustered with a two step, self-organizing map (SOM, samples: 7 $\times$ 7 hexagonal grid, Euclidean distance) and k-means clustering (Euclidean distance) procedure. The optimal cluster number was determined by the bend of the total within-cluster sum of squares (WSS) curve.
+
+__(A)__ Progress of the SOM training procedure visualized as the drop of the mean distance to the winning unit with the algorithm iterations.
+
+__(B)__ Determination of the optimal cluster number in hierarchical clustering of the SOM nodes by finding the bend of the within-cluster WSS curve.
+
+__(C)__ Histogram of the SOM node clustering structure.
+
+\newpage
+
+```{r fig-cluster-infiltration, fig.width = mm_inch(suppl_figures$infil_clusters$w), fig.height = mm_inch(suppl_figures$infil_clusters$h), dpi = 600, fig.cap = 'Levels of tumor-associated macrophages, T cells and uncharacterized, bona-fide malignant cells in the immune infiltration clusters.'}
+
+suppl_figures$infil_clusters$plot
+
+```
+
+__Supplementary Figure \@ref(fig:fig-cluster-infiltration). Levels of tumor-associated macrophages, T cells and uncharacterized, bona-fide malignant cells in the immune infiltration clusters.__
+
+Levels of M1 and M2 tumor-associated macrophages, CD4^+^ non-regulatory and regulatory T cells, cytotoxic CD8^+^ T cells and uncharacterized bona-fide malignant cells estimated by the QuantTIseq algorithm were compared between the immune infiltration clusters of the TCGA cohort (__Figure \@ref(fig:fig-clusters)__ and __Supplementary Figure \@ref(fig:fig-cluster-dev)__). Statistical significance was assessed by Kruskal-Wallis test corrected for multiple testing with Benjamini-Hochberg method. P values are indicated in the plot captions. Estimate levels are presented in violin plots. Points represent single tumor samples, orange diamonds and whiskers code for medians with interquantile ranges. Number of samples assigned to the clusters are indicated under the plots.
+
+\newpage
+
+```{r fig-top-dge, fig.width = mm_inch(suppl_figures$top_dge$w), fig.height = mm_inch(suppl_figures$top_dge$h), dpi = 600, fig.cap = 'Top 20 strongest up- and downregulated genes in $\\emph{CXCR4}^{high}$ vs $\\emph{CXCR4}^{high}$ tumors.'}
+
+suppl_figures$top_dge$plot
+
+```
+
+__Supplementary Figure \@ref(fig:fig-top-dge). Top 20 strongest up- and downregulated genes in _CXCR4_^high^ vs _CXCR4_^low^ tumors.__ 
+
+Tumor samples were stratified as _CXCR4_^high^ vs _CXCR4_^low^ expressors by the optimal cutoff for the difference in tumor-related survival. Differentially expressed genes were determined by Benjamini-Hochberg-corrected T test and 1.5-fold regulation cutoff (__Supplementary Table \@ref(tab:tab-dge)__). $log_2$ differences in expression between the _CXCR4_^high^ and _CXCR4_^low^ tumors with $95\%$ confidence intervals for the top 20 strongest up- and downregulated genes are presented. N number of observations is indicated below the plot.
+
+\newpage
+
+```{r fig-enrichment, fig.width = mm_inch(suppl_figures$enrichment$w), fig.height = mm_inch(suppl_figures$enrichment$h), dpi = 600, fig.cap = 'Top 20 significantly enriched GO terms within the sets of the genes up- and downregulated in $\\emph{CXCR4}^{high}$ vs $\\emph{CXCR4}^{high}$ tumors.'}
+
+suppl_figures$enrichment$plot
+
+```
+
+__Supplementary Figure \@ref(fig:fig-enrichment). Top 20 significantly enriched GO terms within the sets of the genes up- and downregulated in _CXCR4_^high^ vs _CXCR4_^low^ tumors.__ 
+
+Biological process gene ontology (BP GO) term enrichment analysis for the gene sets differentially regulated in _CXCR4_^high^ vs _CXCR4_^low^ tumors ((`r stri_replace(dge$plot_tag, fixed = '\n', replacement = '')`)) was performed with the _goana()_ tool from _limma_ package. Benjamini-Hochberg-corrected enrichment p values (pFDR) for the top 20 most significantly enriched BP GO terms and KEGG pathways are presented in bar plots. Note: for the downregulated gene set no significant no significant GO term and no significant KEGG pathway enrichment was detected.
+
+\newpage
+
+# Supplementary Tables
+
+```{r tab-correlations}
+
+suppl_tables$correlations[1, 1] %>% 
+  mutate(Feature = '') %>% 
+  kable(caption = '\\textbf{Pearson correlation of immune features with $\\emph{CXCR4}$ expression in pancreatic cancer.} Estimates of immune cell features were obtained for the TCGA RNA seq samples with the algorithms supported by TIMER and correlated with $\\log_2$ expression levels of $\\emph{CXCR4}$  with Pearson correlation. Rho: correlation coefficient with $95\\%$ confidence intervals, pFDR: p value corrected for multiple comparisons with Benjamini-Hochberg method.\\\\The table is available as an Excel file.', 
+        format = 'latex', 
+        escape = T, 
+        booktabs = T, 
+        longtable = F, 
+        col.names = '') %>% 
+  kable_styling(full_width = F)
+
+```
+
+
+```{r tab-dge}
+
+suppl_tables$dge[1, 1] %>% 
+  mutate(Gene = '') %>% 
+  kable(caption = '\\textbf{Differentially expressed genes in $\\emph{CXCR4}$ expression strata.} Tumor samples were stratified as $\\emph{CXCR4}^{hi}$ and $\\emph{CXCR4}^{low}$ by the optimal cutoff for the difference in tumor-related survival. Differentially expressed genes were determined by Benjamini-Hochberg-corrected T test and 1.5-fold regulation cutoff. $\\log_2$ Regulation: $\\log_2$ difference in expression between the $\\emph{CXCR4}^{hi}$ and $\\emph{CXCR4}^{low}$ samples, Lower/Upper CI: $95\\%$ confidence interval for the $\\log_2$ expression difference, pFDR: pFDR: p value corrected for multiple comparisons with Benjamini-Hochberg method.\\\\The table is available as an Excel file.', 
+        format = 'latex', 
+        escape = T, 
+        booktabs = T, 
+        longtable = F, 
+        col.names = '') %>% 
+  kable_styling(full_width = F)
+
+```
+
+
+```{r tab-spia}
+
+suppl_tables$spia_results[1, 1] %>% 
+  mutate(Pathway = '') %>% 
+  kable(caption = '\\textbf{Differential signaling pathway modulation in $\\emph{CXCR4}$ expression strata investigated with SPIA algorithm.} Pathway: KEGG pathway name, Modulation tA: the observed total perturbation accumulation in the pathway, pGFDR: global, combined (enrichment and perturbation) p value corrected for multiple comparisons with Benjamini-Hochberg method.\\\\The table is available as an Excel file.', 
+        format = 'latex', 
+        escape = T, 
+        booktabs = T, 
+        longtable = F, 
+        col.names = '') %>% 
+  kable_styling(full_width = F)
+
+```
+
+\newpage
+
+# References
